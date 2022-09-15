@@ -1,0 +1,6 @@
+class Hash {
+    public:
+        
+    private:
+
+};
