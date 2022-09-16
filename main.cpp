@@ -11,9 +11,9 @@ string toHex(string str) {
     return hex.str();
 }
 
-string toHex(int str) {
+string toHex(int num) {
     std::stringstream hex;
-        hex << std::hex << str;
+        hex << std::hex << num;
     return hex.str();
 }
 
@@ -25,20 +25,29 @@ string toBits(string str) {
     return bits.str();
 }
 
+int toDec(char c) {
+    std::stringstream ss;
+    ss << c;
+    int y;
+    ss >> std::hex >> y;
+    return y;
+}
+
 int generateSeed(string str) {
     string bits = toBits(str);
     int seed = bits.length();
 
     for (int i = 0; i <= bits.length(); i++) {
-        seed += i * (char)(bits[i]);
+        seed += (i + 1) * (char)(bits[i]);
     }
+
 
     return seed;
 }
 
 string secretKey(string str) {
     std::mt19937 mt;
-    mt.seed(static_cast<long unsigned int>(generateSeed(str)));
+    mt.seed(generateSeed(str));
     std::uniform_int_distribution<int> dist(0, 15);
 
     string output = "";
@@ -49,19 +58,50 @@ string secretKey(string str) {
     return output;
 }
 
+string compress(string hex) {
+    while (hex.length() > 64) {
+        char last = hex.back();
+        int index = hex.length() % 64;
+        
+        char newValue = toHex(toDec(last) + toDec(hex[index])).back();
+        hex[index] = newValue;
+
+        hex.pop_back();
+    }
+
+    return hex;
+}
+
 string hash(string str) {
     string key = secretKey(str);
 
-    string output = "";
+    key += toHex(str);
 
-    return output;
+    return compress(key);
 }
 
-int main() {
-    string in = "Labas";
-    // hash(in);
-    // cout << hash(in) << " " << hash(in).length();
+string readFile(string fileName) {
+    std::ifstream file (fileName);
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
 
-    cout << secretKey("asdfg") << "\n";
-    cout << secretKey("bsdfg") << "\n";
+    return buffer.str();
+}
+
+int main(int argc, char** argv) {
+    string input;
+
+    if (argc > 1)
+        input = readFile(argv[1]);
+    else {
+        // TODO
+        // manual input
+    }
+
+    auto start = hrClock::now();
+    cout << hash(input) << "\n";
+    auto stop = hrClock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    cout << duration.count() * 1e-9 << "";
 }
