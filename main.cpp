@@ -33,14 +33,37 @@ int toDec(char c) {
     return y;
 }
 
-int generateSeed(string str) {
-    string bits = toBits(str);
-    int seed = bits.length();
+int toDec(string c) {
+    std::stringstream ss;
+    ss << c;
+    int y;
+    ss >> std::hex >> y;
+    return y;
+}
 
-    for (int i = 0; i <= bits.length(); i++) {
-        seed += (i + 1) * (char)(bits[i]);
+string compress(string hex, int length = 64) {
+    while (hex.length() > length) {
+        char last = hex.back();
+        int index = hex.length() % length;
+        
+        char newValue = toHex(toDec(last) + toDec(hex[index])).back();
+        hex[index] = newValue;
+
+        hex.pop_back();
     }
 
+    return hex;
+}
+
+int generateSeed(string str) {
+    string bits = toBits(str);
+    int seed = bits.length() + toDec(compress(toHex(str), 4));
+
+    for (int i = 0; i < bits.length() / 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            seed += (j*i) * (char)(bits[i + j]) + j;
+        }
+    }
 
     return seed;
 }
@@ -56,20 +79,6 @@ string secretKey(string str) {
     }
 
     return output;
-}
-
-string compress(string hex) {
-    while (hex.length() > 64) {
-        char last = hex.back();
-        int index = hex.length() % 64;
-        
-        char newValue = toHex(toDec(last) + toDec(hex[index])).back();
-        hex[index] = newValue;
-
-        hex.pop_back();
-    }
-
-    return hex;
 }
 
 string hash(string str) {
@@ -91,14 +100,15 @@ string readFile(string fileName) {
 
 int main(int argc, char** argv) {
     string input;
-
+    
     if (argc > 1)
         input = readFile(argv[1]);
     else {
-        // TODO
-        // manual input
+        cout << "Iveskite teksta\n";
+        std::cin >> input;
     }
 
+    cout << input << "\n";
     auto start = hrClock::now();
     cout << hash(input) << "\n";
     auto stop = hrClock::now();
