@@ -16,7 +16,7 @@ class TestFiles():
         newLines (optional): Include new line symbol in the return list. Defaults to True
     """
     def __init__(self, lowercase: bool = True, uppercase: bool = True, digits: bool = True, punctuation: bool = True, spaces: bool = True, newLines: bool = True, fileFolder: str = "./testFiles"):
-        self.fileFolder = fileFolder
+        self.__fileFolder = fileFolder
 
         self.allowedCharacters(lowercase=lowercase, uppercase=uppercase, digits=digits, punctuation=punctuation, spaces=spaces, newLines=newLines)
 
@@ -25,20 +25,25 @@ class TestFiles():
         Args:
             path: Path to an empty folder
         """
-        self.fileFolder = path
+        self.__fileFolder = path
 
-    def clearFileFolder(self):
+    def __clearFolder(self, folder: str):
         """ Function to clear test file folder """
         try:
-            for filename in os.listdir(self.fileFolder):
-                filePath = os.path.join(self.fileFolder, filename)
+            for filename in os.listdir(folder):
+                filePath = os.path.join(folder, filename)
 
                 if os.path.isfile(filePath) or os.path.islink(filePath):
                     os.unlink(filePath)
                 elif os.path.isdir(filePath):
                     shutil.rmtree(filePath)
+
         except FileNotFoundError:
-            os.mkdir(self.fileFolder)
+            try:
+                os.mkdir(folder)
+            except FileNotFoundError:
+                os.mkdir(self.__fileFolder)
+                os.mkdir(folder)
 
     def allowedCharacters(self, lowercase: bool = None, uppercase: bool = None, digits: bool = None, punctuation: bool = None, spaces: bool = None, newLines: bool = None):
         """ Function to change characters uesd in generated strings\n
@@ -52,25 +57,25 @@ class TestFiles():
         """
 
         if lowercase != None:
-            self.lowercase = lowercase
+            self.__lowercase = lowercase
 
         if uppercase != None:
-            self.uppercase = uppercase
+            self.__uppercase = uppercase
 
         if digits != None:
-            self.digits = digits
+            self.__digits = digits
 
         if punctuation != None:
-            self.punctuation = punctuation
+            self.__punctuation = punctuation
 
         if spaces != None:
-            self.spaces = spaces
+            self.__spaces = spaces
 
         if newLines != None:
-            self.newLines = newLines
+            self.__newLines = newLines
 
 
-    def getCharacters(self) -> list[str]:
+    def __getCharacters(self) -> list[str]:
         """ Function that returns a list of characters\n
         Args:
             lowercase: Include lowercase letters in the return list. Defaults to True
@@ -85,17 +90,17 @@ class TestFiles():
         
         characters = []
 
-        if self.lowercase:
+        if self.__lowercase:
             characters += list(string.ascii_lowercase)
-        if self.uppercase:
+        if self.__uppercase:
             characters += list(string.ascii_uppercase)
-        if self.digits:
+        if self.__digits:
             characters += list(string.digits)
-        if self.punctuation:
+        if self.__punctuation:
             characters += list(string.punctuation)
-        if self.spaces:
+        if self.__spaces:
             characters += [" "]
-        if self.newLines:
+        if self.__newLines:
             characters += ["\n"]
 
         return characters
@@ -108,7 +113,7 @@ class TestFiles():
             Generated string
         """
 
-        characters = self.getCharacters()
+        characters = self.__getCharacters()
         str = ''.join(random.choice(characters) for _ in range(length))
 
         return str
@@ -120,9 +125,9 @@ class TestFiles():
         Returns:
             List of the names of generated files
         """
-        self.clearFileFolder()
+        self.__clearFolder(f"{self.__fileFolder}/singleSymbol/")
 
-        characters = self.getCharacters()
+        characters = self.__getCharacters()
         numberOfFiles = len(characters) if numberOfFiles > len(characters) else numberOfFiles
 
         files = []
@@ -130,7 +135,7 @@ class TestFiles():
             char = random.choice(characters)
             characters.remove(char)
 
-            fileName = f"{self.fileFolder}/{i}.txt"
+            fileName = f"{self.__fileFolder}/singleSymbol/{i}.txt"
 
             f = open(fileName, "w")
             f.write(char)
@@ -148,13 +153,13 @@ class TestFiles():
         Returns:
             List of the names of generated files
         """
-        self.clearFileFolder()
+        self.__clearFolder(f"{self.__fileFolder}/randomSymbols/")
         
         files = []
         for i in range(numberOfFiles):
             str = self.getRandomString(numberOfSymbols)
 
-            fileName = f"{self.fileFolder}/{i}.txt"
+            fileName = f"{self.__fileFolder}/randomSymbols/{i}.txt"
 
             f = open(fileName, "w")
             f.write(str)
@@ -173,15 +178,15 @@ class TestFiles():
             List of the names of generated files
         """
 
-        self.clearFileFolder()
+        self.__clearFolder(f"{self.__fileFolder}/similarSymbols/")
         
-        characters = self.getCharacters()
+        characters = self.__getCharacters()
         baseString = self.getRandomString(numberOfSymbols)
 
         if numberOfFiles < 1:
             return []
 
-        files = [f"{self.fileFolder}/0.txt"]
+        files = [f"{self.__fileFolder}/similarSymbols/0.txt"]
 
         f = open(files[0], "w")
         f.write(baseString)
@@ -199,13 +204,55 @@ class TestFiles():
 
             generated.append(str)
 
-            fileName = f"{self.fileFolder}/{i}.txt"
+            fileName = f"{self.__fileFolder}/similarSymbols/{i}.txt"
 
             f = open(fileName, "w")
             f.write(str)
             f.close()
 
             files.append(fileName)
+
+        return files
+
+    def similarPairs(self, numberOfPairs: int, numberOfSymbols: int) -> list[str]:
+        """ Function to generate pairs of strings that differ by one symbol\n
+        Args:
+            numberOfPairs: Number of pairs to generate
+            stringLength: Length of generated strings. Defaults to 0, which makes length random
+        Returns:
+            List of the generated file pairs
+        """
+
+        self.__clearFolder(f"{self.__fileFolder}/similarPairs/")
+
+        if numberOfPairs < 1:
+            return []
+        
+        characters = self.__getCharacters()
+
+
+        files = []
+
+        for i in range(1, numberOfPairs):
+            baseString = self.getRandomString(numberOfSymbols)
+            str = baseString
+
+            while str == baseString:
+                char = random.choice(characters)
+                index = random.randint(0, numberOfSymbols - 1)
+                str = str[0:index] + char + str[index + 1: ]
+
+            fileNames = [f"{self.__fileFolder}/similarPairs/{i}_0.txt", f"{self.__fileFolder}/similarPairs/{i}_1.txt"]
+
+            f = open(fileNames[0], "w")
+            f.write(baseString)
+            f.close()
+
+            f = open(fileNames[1], "w")
+            f.write(str)
+            f.close()
+
+            files.append(fileNames)
 
         return files
 
@@ -217,12 +264,12 @@ class TestFiles():
             List of the names of generated files
         """
 
-        self.clearFileFolder()
+        self.__clearFolder(f"{self.__fileFolder}/empty/")
 
         files = []
 
         for i in range(numberOfFiles):
-            fileName = f"{self.fileFolder}/{i}.txt"
+            fileName = f"{self.__fileFolder}/empty/{i}.txt"
 
             f = open(fileName, "w")
             f.close() 
@@ -240,6 +287,8 @@ class TestFiles():
             List of the generated file pairs
         """
 
+        self.__clearFolder(f"{self.__fileFolder}/pairs/")
+        
         files = []
 
         for i in range(numberOfPairs):
@@ -251,7 +300,7 @@ class TestFiles():
             str0 = self.getRandomString(length)
             str1 = self.getRandomString(length)
 
-            fileNames = [f"{self.fileFolder}/{i}_0.txt", f"{self.fileFolder}/{i}_1.txt"]
+            fileNames = [f"{self.__fileFolder}/pairs/{i}_0.txt", f"{self.__fileFolder}/pairs/{i}_1.txt"]
 
             f = open(fileNames[0], "w")
             f.write(str0)
@@ -264,21 +313,23 @@ class TestFiles():
 
         return files
 
-    def constitutionLines(self, constitutionFile = "./konstitucija.txt") -> list[str]:
-        """ Function to get Lithuanian constitution text\n
+    def getLines(self, file = "./konstitucija.txt") -> list[str]:
+        """ Function to split single text file into files containing one line each\n
         Args:
-            constitutionFile: Path to text file. Defaults to "./konstitucija.txt"
+            file: Path to text file. Defaults to "./konstitucija.txt"
         Returns:
             List of file names with constitution lines
         """
 
-        f = open(constitutionFile, "r", encoding="utf8")
+        self.__clearFolder(f"{self.__fileFolder}/lines/")
+
+        f = open(file, "r", encoding="utf8")
         lines = f.readlines()
 
         files = []
 
         for i in range(len(lines)):
-            fileName = f"{self.fileFolder}/{i}.txt"
+            fileName = f"{self.__fileFolder}/lines/{i}.txt"
             
             f = open(fileName, "w", encoding="utf8")
             f.write(lines[i][0:-1])

@@ -1,7 +1,10 @@
+import re
 import subprocess
 import string
 from more_itertools import locate
-from difflib import SequenceMatcher
+from multiprocessing import Pool
+import time
+import binascii
 
 from testFiles import TestFiles
 
@@ -15,8 +18,6 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-
-# class HashTest
 
 def findIndices(lst: list, val):
     """ Function to find all indices of a given value in a list\n
@@ -37,52 +38,156 @@ def similarity(str1: string, str2: string):
     Returns:
         Similarity ratio of two given strings
     """
-    return SequenceMatcher(None, str1, str2).ratio()
 
-if __name__ == "__main__":
-    # files = randomSymbols(10, 200)
-    filegen = TestFiles()
-    print(filegen.emptyFile(2))
+    matchingSymbols = 0
+    for i in range(len(str1)):
+        if str1[i] == str2[i]:
+            matchingSymbols += 1
 
-if __name__ == "__main__1":
-    # compile c++ executable
-    subprocess.run(["make"])
+    return matchingSymbols / len(str1)
 
-    hashes = []
+def collision(res1, res2):
+    if res1["hash"] != res2["hash"]:
+        return False
+    elif res1["input"] == res2["input"]:
+        return False
+    return True
+
+def analyse(hashes):
+    totalHashes = len(hashes)
+
     totalTime = 0
-    totalLength = 0
-
-
-    for _ in range(1):
-        fileName = "test.txt"
-
-        output = subprocess.run(['./main', f"{fileName}"], stdout=subprocess.PIPE)
-
-        result = output.stdout.decode('utf-8').replace("\r", "").split("\n")
-
-        print(result[0])
-        hashes.append(result[0])
-        totalTime += float(result[1])
-
+    minTime = hashes[0]["time"]
+    maxTime = hashes[0]["time"]
+    
+    totalInputLength = 0
+    totalHashLength = 0
 
     collisions = 0
-    hashLengths = 0
+
     for i in range(len(hashes)):
-        collisions += len(findIndices(hashes, hashes[i])) - 1
-        hashLengths += len(hashes[i])
+        totalTime += hashes[i]["time"]
 
+        if hashes[i]["time"] > maxTime:
+            maxTime = hashes[i]["time"]
 
-    averageCollisions = collisions / len(hashes)
-    averageHashLength = hashLengths / len(hashes)
-    if averageCollisions != 0:
-        print(f"Average collisions: {bcolors.FAIL}{averageCollisions}{bcolors.ENDC}")
-    else:
-        print(f"Average collisions: {bcolors.OKGREEN}{averageCollisions}{bcolors.ENDC}")
+        if hashes[i]["time"] < minTime:
+            minTime = hashes[i]["time"]
+
+        totalInputLength += len(hashes[i]["input"])
+        totalHashLength += len(hashes[i]["hash"])
+
+        for j in range(i, len(hashes)):
+            if collision(hashes[i], hashes[j]):
+                collisions += 1
+
+    print(f"Hashed {totalHashes} strings ({totalInputLength} symbols) in {round(totalTime, 5)}s")
+    print(f"Average hash time: {round(totalTime / totalHashes, 5)}s")
+    print(f"Max hash time: {round(maxTime, 5)}s")
+    print(f"Min hash time: {round(minTime, 5)}s")
+
+    print(f"Average input length: {round(totalInputLength / totalHashes, 5)}")
+    print(f"Average hash length: {bcolors.OKGREEN if totalHashLength / totalHashes == 64 else bcolors.FAIL}{totalHashLength / totalHashes}{bcolors.ENDC}")
+    print(f"Collisions: {bcolors.OKGREEN if collisions == 0 else bcolors.FAIL}{collisions}{bcolors.ENDC}")
+
+def hash(file):
+    output = subprocess.run(['./main', f"{file}"], stdout=subprocess.PIPE)
+    output = output.stdout.decode('utf-8').replace("\r", "").split("\n")
+
+    result = {
+        "input": output[0],
+        "hash": output[1],
+        "time": float(output[2])
+    }
+    return result
+
+def parallerHash(files, poolSize):
+    results = []
+
+    with Pool(poolSize) as pool:
+        result = pool.map_async(hash, files)
+        results += result.get()
+
+    return results
+
+def printHashes(results):
+    for result in results:
+        print(result["hash"])
+
+def printHashes(results0, results1):
+    for i in range(len(results0)):
+        print(results0[i]["hash"], results1[i]["hash"])
+
+def firstTest(filegen):
+    filesOneSymbol = filegen.singleSymbol(5)
+    filesRandSymbols = filegen.randomSymbols(5, 10000)
+    filesSimSymbols = filegen.similarSymbols(5, 10000)
+    emptyFiles = filegen.emptyFile(5)
+
+    for files in [filesOneSymbol, filesRandSymbols, filesSimSymbols, emptyFiles]:
+        results1 = []
+        results2 = []
+        with Pool(1) as pool:
+            result = pool.map_async(hash, files)
+            results1 += result.get()
+
+        with Pool(1) as pool:
+            result = pool.map_async(hash, files)
+            results2 += result.get()
+
+        printHashes(results1, results2)
+        print()
+
+def secondTest(filegen):
+    filesConstitution = filegen.getLines("konstitucija.txt")
     
-    if averageHashLength != 64:
-        print(f"Average hash length: {bcolors.FAIL}{averageHashLength}{bcolors.ENDC}")
-    else:
-        print(f"Average hash length: {bcolors.OKGREEN}{averageHashLength}{bcolors.ENDC}")
+    results = parallerHash(filesConstitution, 1)
 
-    print(f"Average string length: {totalLength / len(hashes)}")
-    print(f"Average hashing time: {totalTime / len(hashes)}")
+    analyse(results)
+
+def thirdTest(filegen):
+    collisions = 0
+
+    for symbols in [10, 100, 500, 1000]:
+        filesSymbolPairs = filegen.generatePairs(25000, symbols)
+        for pair in filesSymbolPairs:
+            results = parallerHash(pair, 8)
+            if collision(results[0], results[1]):
+                collisions += 1
+
+    print(f"Number of collisions: {collisions}")
+
+def fourthTest(filegen):
+    hexSimillarity = 0
+    bitsSimillarity = 0
+    pairs = 20
+
+    for symbols in [10, 100, 500, 1000]:
+        filesSymbolPairs = filegen.similarPairs(pairs // 4, symbols)
+        for pair in filesSymbolPairs:
+            results = parallerHash(pair, 8)
+            hash1 = results[0]["hash"]
+            hash2 = results[1]["hash"]
+            hexSimillarity += similarity(hash1, hash2)
+
+            
+            hash1Binary = str(bin(int(hash1, 16))[2:])
+            hash2Binary = str(bin(int(hash2, 16))[2:])
+            print(len(hash2Binary), len(hash1Binary))
+            # bitsSimillarity += similarity(hash1Binary, hash2Binary)
+    
+    print(f"Hex simillarity: {round(hexSimillarity / pairs * 100, 5)}%")
+    print(f"Bits simillarity: {round(bitsSimillarity / pairs * 100, 5)}%")
+
+def main():
+    filegen = TestFiles(newLines=False)
+
+    # firstTest(filegen)
+    # secondTest(filegen)
+    # thirdTest(filegen)
+    fourthTest(filegen)
+
+if __name__ == "__main__":
+    start_time = time.time()
+    main()
+    print("--- %s seconds ---" % (time.time() - start_time))
