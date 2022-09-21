@@ -101,17 +101,21 @@ string readFile(string fileName) {
 int main(int argc, char** argv) {
     string input;
     
-    if (argc > 1)
-        input = readFile(argv[1]);
-    else {
+    if (argc == 1) {
         cout << "Iveskite teksta\n";
         std::cin >> input;
+        cout << hash(input) << "\n";
+    } else {
+        for (int i = 1; i < argc; i++) {
+            input = readFile(argv[1]);
+            cout << input << "\n";
+            auto start = hrClock::now();
+            cout << hash(input) << "\n";
+            auto stop = hrClock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+            cout << duration.count() * 1e-9 << "\n";
+        }
     }
-
-    cout << input << "\n";
-    auto start = hrClock::now();
-    cout << hash(input) << "\n";
-    auto stop = hrClock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-    cout << duration.count() * 1e-9 << "";
+    
+    
 }
