@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
         cout << hash(input) << "\n";
     } else {
         for (int i = 1; i < argc; i++) {
-            input = readFile(argv[1]);
+            input = readFile(argv[i]);
             cout << input << "\n";
             auto start = hrClock::now();
             cout << hash(input) << "\n";
