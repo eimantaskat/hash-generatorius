@@ -105,7 +105,7 @@ class TestFiles():
 
         return characters
 
-    def getRandomString(self, length: int) -> str:
+    def __getRandomString(self, length: int) -> str:
         """ Function that generates random string\n
         Args:
             length: Length of generated string
@@ -118,13 +118,22 @@ class TestFiles():
 
         return str
 
-    def singleSymbol(self, numberOfFiles: int) -> list[str]:
+    def singleSymbol(self, numberOfFiles: int, existingFiles = False) -> list[str]:
         """ Function to generate text files with one random symbol\n
         Args:
             numberOfFiles: Number of files to generate
+            existingFiles: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the names of generated files
         """
+
+        if existingFiles:
+            try:
+                if os.listdir(f"{self.__fileFolder}/singleSymbol/"):
+                    return [f"{self.__fileFolder}/singleSymbol/{dir}" for dir in os.listdir(f"{self.__fileFolder}/singleSymbol/")]
+            except FileNotFoundError:
+                pass
+
         self.__clearFolder(f"{self.__fileFolder}/singleSymbol/")
 
         characters = self.__getCharacters()
@@ -145,19 +154,28 @@ class TestFiles():
 
         return files
 
-    def randomSymbols(self, numberOfFiles: int, numberOfSymbols: int) -> list[str]:
+    def randomSymbols(self, numberOfFiles: int, numberOfSymbols: int, existingFiles = False) -> list[str]:
         """ Function to generate text files with random symbols\n
         Args:
             numberOfFiles: Number of files to generate
             numberOfSymbols: Number of symbols to generate in every file
+            existingFiles: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the names of generated files
         """
+
+        if existingFiles:
+            try:
+                if os.listdir(f"{self.__fileFolder}/randomSymbols/"):
+                    return [f"{self.__fileFolder}/randomSymbols/{dir}" for dir in os.listdir(f"{self.__fileFolder}/randomSymbols/")]
+            except FileNotFoundError:
+                pass
+
         self.__clearFolder(f"{self.__fileFolder}/randomSymbols/")
         
         files = []
         for i in range(numberOfFiles):
-            str = self.getRandomString(numberOfSymbols)
+            str = self.__getRandomString(numberOfSymbols)
 
             fileName = f"{self.__fileFolder}/randomSymbols/{i}.txt"
 
@@ -169,19 +187,27 @@ class TestFiles():
 
         return files
 
-    def similarSymbols(self, numberOfFiles: int, numberOfSymbols: int) -> list[str]:
+    def similarSymbols(self, numberOfFiles: int, numberOfSymbols: int, existingFiles = False) -> list[str]:
         """ Function to generate text files with strings that differ from first file by only one symbol\n
         Args:
             numberOfFiles: Number of files to generate
             numberOfSymbols: Number of symbols to generate in every file
+            existingFiles: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the names of generated files
         """
 
+        if existingFiles:
+            try:
+                if os.listdir(f"{self.__fileFolder}/similarSymbols/"):
+                    return [f"{self.__fileFolder}/similarSymbols/{dir}" for dir in os.listdir(f"{self.__fileFolder}/similarSymbols/")]
+            except FileNotFoundError:
+                pass
+
         self.__clearFolder(f"{self.__fileFolder}/similarSymbols/")
         
         characters = self.__getCharacters()
-        baseString = self.getRandomString(numberOfSymbols)
+        baseString = self.__getRandomString(numberOfSymbols)
 
         if numberOfFiles < 1:
             return []
@@ -214,14 +240,22 @@ class TestFiles():
 
         return files
 
-    def similarPairs(self, numberOfPairs: int, numberOfSymbols: int) -> list[str]:
+    def similarPairs(self, numberOfPairs: int, numberOfSymbols: int, existingFiles = False) -> list[str]:
         """ Function to generate pairs of strings that differ by one symbol\n
         Args:
             numberOfPairs: Number of pairs to generate
             stringLength: Length of generated strings. Defaults to 0, which makes length random
+            existingFiles: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the generated file pairs
         """
+
+        if existingFiles:
+            try:
+                if os.listdir(f"{self.__fileFolder}/similarPairs/"):
+                    return [f"{self.__fileFolder}/similarPairs/{dir}" for dir in os.listdir(f"{self.__fileFolder}/similarPairs/")]
+            except FileNotFoundError:
+                pass
 
         self.__clearFolder(f"{self.__fileFolder}/similarPairs/")
 
@@ -233,8 +267,8 @@ class TestFiles():
 
         files = []
 
-        for i in range(1, numberOfPairs):
-            baseString = self.getRandomString(numberOfSymbols)
+        for i in range(0, numberOfPairs):
+            baseString = self.__getRandomString(numberOfSymbols)
             str = baseString
 
             while str == baseString:
@@ -256,13 +290,21 @@ class TestFiles():
 
         return files
 
-    def emptyFile(self, numberOfFiles: int) -> list[str]:
+    def emptyFiles(self, numberOfFiles: int, existingFiles = False) -> list[str]:
         """ Function to generate empty text files\n
         Args:
             numberOfFiles: Number of files to generate
+            existingFiles: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the names of generated files
         """
+
+        if existingFiles:
+            try:
+                if os.listdir(f"{self.__fileFolder}/empty/"):
+                    return [f"{self.__fileFolder}/empty/{dir}" for dir in os.listdir(f"{self.__fileFolder}/empty/")]
+            except FileNotFoundError:
+                pass
 
         self.__clearFolder(f"{self.__fileFolder}/empty/")
 
@@ -278,14 +320,22 @@ class TestFiles():
 
         return files
 
-    def generatePairs(self, numberOfPairs: int, stringLength = 0) -> list[list[str]]:
+    def generatePairs(self, numberOfPairs: int, stringLength = 0, existingFiles = False) -> list[list[str]]:
         """ Function to generate pairs of random same length strings\n
         Args:
             numberOfPairs: Number of pairs to generate
             stringLength: Length of generated strings. Defaults to 0, which makes length random
+            existingFiles: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the generated file pairs
         """
+
+        if existingFiles:
+            try:
+                if os.listdir(f"{self.__fileFolder}/pairs/"):
+                    return [f"{self.__fileFolder}/pairs/{dir}" for dir in os.listdir(f"{self.__fileFolder}/pairs/")]
+            except FileNotFoundError:
+                pass
 
         self.__clearFolder(f"{self.__fileFolder}/pairs/")
         
@@ -297,8 +347,8 @@ class TestFiles():
             else:
                 length = stringLength
 
-            str0 = self.getRandomString(length)
-            str1 = self.getRandomString(length)
+            str0 = self.__getRandomString(length)
+            str1 = self.__getRandomString(length)
 
             fileNames = [f"{self.__fileFolder}/pairs/{i}_0.txt", f"{self.__fileFolder}/pairs/{i}_1.txt"]
 
@@ -309,17 +359,26 @@ class TestFiles():
             f.write(str1)
             f.close()
 
-            files.append(fileNames)
+            files.append(fileNames[0])
+            files.append(fileNames[1])
 
         return files
 
-    def getLines(self, file = "./konstitucija.txt") -> list[str]:
+    def getLines(self, file = "./konstitucija.txt", existingFiles = False) -> list[str]:
         """ Function to split single text file into files containing one line each\n
         Args:
             file: Path to text file. Defaults to "./konstitucija.txt"
+            existingFiles: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of file names with constitution lines
         """
+
+        if existingFiles:
+            try:
+                if os.listdir(f"{self.__fileFolder}/lines/"):
+                    return [f"{self.__fileFolder}/lines/{dir}" for dir in os.listdir(f"{self.__fileFolder}/lines/")]
+            except FileNotFoundError:
+                pass
 
         self.__clearFolder(f"{self.__fileFolder}/lines/")
 
@@ -338,3 +397,6 @@ class TestFiles():
             files.append(fileName)
 
         return files
+    
+    def getFileList(self, path: str):
+        return [f"{path}/{dir}" for dir in os.listdir(path)]

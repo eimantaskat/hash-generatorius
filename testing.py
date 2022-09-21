@@ -1,10 +1,10 @@
-import re
+import math
+from re import M
 import subprocess
 import string
 from more_itertools import locate
 from multiprocessing import Pool
 import time
-import binascii
 
 from testFiles import TestFiles
 
@@ -19,26 +19,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def findIndices(lst: list, val):
-    """ Function to find all indices of a given value in a list\n
-    Args:
-        lst: List to search for values
-        val: Value to find indices
-    Returns:
-        List of indices of a given value in a list
-    """
-
-    indices = locate(lst, lambda x: x == val)
-    return list(indices)
-
 def similarity(str1: string, str2: string):
-    """ Function to calculate similarity of two given strings\n
-    Args:
-        str1, str2: Strings to calculate similarity
-    Returns:
-        Similarity ratio of two given strings
-    """
-
     matchingSymbols = 0
     for i in range(len(str1)):
         if str1[i] == str2[i]:
@@ -90,17 +71,6 @@ def analyse(hashes):
     print(f"Average hash length: {bcolors.OKGREEN if totalHashLength / totalHashes == 64 else bcolors.FAIL}{totalHashLength / totalHashes}{bcolors.ENDC}")
     print(f"Collisions: {bcolors.OKGREEN if collisions == 0 else bcolors.FAIL}{collisions}{bcolors.ENDC}")
 
-def hash(file):
-    output = subprocess.run(['./main', f"{file}"], stdout=subprocess.PIPE)
-    output = output.stdout.decode('utf-8').replace("\r", "").split("\n")
-
-    result = {
-        "input": output[0],
-        "hash": output[1],
-        "time": float(output[2])
-    }
-    return result
-
 def parallerHash(files, poolSize):
     results = []
 
@@ -119,73 +89,141 @@ def printHashes(results0, results1):
         print(results0[i]["hash"], results1[i]["hash"])
 
 def firstTest(filegen):
-    filesOneSymbol = filegen.singleSymbol(5)
-    filesRandSymbols = filegen.randomSymbols(5, 10000)
-    filesSimSymbols = filegen.similarSymbols(5, 10000)
-    emptyFiles = filegen.emptyFile(5)
+    filesOneSymbol = filegen.singleSymbol(5, existingFiles = True)
+    filesRandSymbols = filegen.randomSymbols(5, 10000, existingFiles = True)
+    filesSimSymbols = filegen.similarSymbols(5, 10000, existingFiles = True)
+    emptyFiles = filegen.emptyFiles(5, existingFiles = True)
 
     for files in [filesOneSymbol, filesRandSymbols, filesSimSymbols, emptyFiles]:
         results1 = []
         results2 = []
-        with Pool(1) as pool:
-            result = pool.map_async(hash, files)
-            results1 += result.get()
+        
+        results1 = hash(files)
 
-        with Pool(1) as pool:
-            result = pool.map_async(hash, files)
-            results2 += result.get()
+        results2 = hash(files)
 
         printHashes(results1, results2)
         print()
 
 def secondTest(filegen):
     filesConstitution = filegen.getLines("konstitucija.txt")
-    
-    results = parallerHash(filesConstitution, 1)
+
+    results = hash(filesConstitution)
 
     analyse(results)
 
 def thirdTest(filegen):
     collisions = 0
 
-    for symbols in [10, 100, 500, 1000]:
-        filesSymbolPairs = filegen.generatePairs(25000, symbols)
-        for pair in filesSymbolPairs:
-            results = parallerHash(pair, 8)
-            if collision(results[0], results[1]):
+    pairs_10 = filegen.getFileList("testFiles/pairs_10")
+    pairs_100 = filegen.getFileList("testFiles/pairs_100")
+    pairs_500 = filegen.getFileList("testFiles/pairs_500")
+    pairs_1000 = filegen.getFileList("testFiles/pairs_1000")
+
+    testFiles = pairs_10 + pairs_100 + pairs_500 + pairs_1000
+
+    filesPerChunk = 500
+
+    l = len(testFiles)
+    chunkSize = math.ceil(l / (l / filesPerChunk))
+
+    chunks = [testFiles[x:x + chunkSize] for x in range(0, len(testFiles), chunkSize)]
+
+    for chunk in chunks:
+        results = hash(chunk)
+        for i in range(0, len(results), 2):
+            hashes += 2
+            if collision(results[i], results[i + 1]):
                 collisions += 1
 
     print(f"Number of collisions: {collisions}")
 
+
 def fourthTest(filegen):
+    files = 0
     hexSimillarity = 0
+    maxHex = 0
+    minHex = 100
+
     bitsSimillarity = 0
-    pairs = 20
-
-    for symbols in [10, 100, 500, 1000]:
-        filesSymbolPairs = filegen.similarPairs(pairs // 4, symbols)
-        for pair in filesSymbolPairs:
-            results = parallerHash(pair, 8)
-            hash1 = results[0]["hash"]
-            hash2 = results[1]["hash"]
-            hexSimillarity += similarity(hash1, hash2)
-
-            
-            hash1Binary = str(bin(int(hash1, 16))[2:])
-            hash2Binary = str(bin(int(hash2, 16))[2:])
-            print(len(hash2Binary), len(hash1Binary))
-            # bitsSimillarity += similarity(hash1Binary, hash2Binary)
+    maxBits = 0
+    minBits = 100
     
-    print(f"Hex simillarity: {round(hexSimillarity / pairs * 100, 5)}%")
-    print(f"Bits simillarity: {round(bitsSimillarity / pairs * 100, 5)}%")
+    pairs_10 = filegen.getFileList("testFiles/similarPairs_10")
+    pairs_100 = filegen.getFileList("testFiles/similarPairs_100")
+    pairs_500 = filegen.getFileList("testFiles/similarPairs_500")
+    pairs_1000 = filegen.getFileList("testFiles/similarPairs_1000")
+
+    testFiles = pairs_10 + pairs_100 + pairs_500 + pairs_1000
+
+    filesPerChunk = 500
+
+    l = len(testFiles)
+    chunkSize = math.ceil(l / (l / filesPerChunk))
+
+    chunks = [testFiles[x:x + chunkSize] for x in range(0, len(testFiles), chunkSize)]
+
+    for chunk in chunks:
+        results = hash(chunk)
+        for i in range(0, len(results), 2):
+            files += 2
+            
+            hash1 = results[i]["hash"]
+            hash2 = results[i + 1]["hash"]
+            sim = similarity(hash1, hash2) * 100
+
+            if maxHex < sim:
+                maxHex = sim
+            if minHex > sim:
+                minHex = sim
+
+            hexSimillarity += sim
+
+            hash1Binary = str(bin(int(hash1, 16))[2:]).rjust(256, "0")
+            hash2Binary = str(bin(int(hash2, 16))[2:]).rjust(256, "0")
+            
+            sim = similarity(hash1Binary, hash2Binary) * 100
+
+            if maxBits < sim:
+                maxBits = sim
+            if minBits > sim:
+                minBits = sim
+
+            bitsSimillarity += sim
+    
+    print(f"Average hex simillarity: {round(hexSimillarity / len(testFiles), 5)}%")
+    print(f"Min hex simillarity: {round(minHex, 5)}%")
+    print(f"Max hex simillarity: {round(maxHex, 5)}%")
+    print()
+    print(f"Average bits simillarity: {round(bitsSimillarity / len(testFiles), 5)}%")
+    print(f"Min bits simillarity: {round(minBits, 5)}%")
+    print(f"Max bits simillarity: {round(maxBits, 5)}%")
+
+def hash(file):
+    command = "./main " + " ".join(file)
+
+    output = subprocess.run(command, stdout=subprocess.PIPE)
+    output = output.stdout.decode('utf-8').replace("\r", "").split("\n")[0:-1]
+
+    results = []
+    for i in range(0, len(output), 3):
+        result = {
+            "input" :output[i],
+            "hash": output[i+1],
+            "time": float(output[i+2])
+        }
+        results.append(result)
+
+    return results
 
 def main():
-    filegen = TestFiles(newLines=False)
+    filegen = TestFiles(newLines=False, punctuation=False)
 
     # firstTest(filegen)
     # secondTest(filegen)
     # thirdTest(filegen)
     fourthTest(filegen)
+
 
 if __name__ == "__main__":
     start_time = time.time()
