@@ -1,2 +1,2 @@
 main:
-	g++ -o main main.cpp hash/hash.cpp
+	g++ -o main src/*.cpp
