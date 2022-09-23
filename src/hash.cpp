@@ -1,14 +1,38 @@
 #include "../include/hash.hpp"
 
+#include <iostream>
+#include <chrono>
+using hrClock = std::chrono::high_resolution_clock;
+
 std::string Hash::hash(std::string str) {
-    std::string key = generateKey(str);
+    this->strInput = str;
 
-    key += toHex(str);
+    this->vectorInput = toCharVector(str);
 
-    return compress(key);
+    std::string k = generateKey(this->vectorInput);
+    std::vector<char> key = toCharVector(k);
+
+    std::vector<char> hash;
+    hash.reserve(key.size() + this->vectorInput.size());
+    hash.insert(hash.end(), key.begin(), key.end());
+    hash.insert(hash.end(), this->vectorInput.begin(), this->vectorInput.end());
+
+    return compress(hash);
 }
 
-std::string Hash::generateKey(std::string str) {
+std::vector<char> Hash::toCharVector(std::string str) {
+    std::vector<char> v;
+    v.reserve(str.length());
+    
+    for (char c:str) {
+        v.push_back(c);
+    }
+    return v;
+}
+
+std::string Hash::generateKey(std::vector<char> str) {
+    // auto start = hrClock::now();
+
     std::mt19937 mt;
     mt.seed(generateSeed(str));
     std::uniform_int_distribution<int> dist(0, 15);
@@ -18,34 +42,61 @@ std::string Hash::generateKey(std::string str) {
         output +=  toHex(dist(mt));
     }
 
+    // auto stop = hrClock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    // std::cout << "generate key: " << duration.count() * 1e-9 << "\n";
+
     return output;
 }
 
-int Hash::generateSeed(std::string str) {
-    std::string bits = toBits(str);
-    int seed = bits.length() + toDec(compress(toHex(str), 4));
+int Hash::generateSeed(std::vector<char> v) {
+    // auto start = hrClock::now();
 
-    for (int i = 0; i < bits.length() / 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            seed += (j*i) * (char)(bits[i + j]) + j;
-        }
-    }
+    int asciiVal = 0;
 
+    for (int i = 0; i < v.size(); i++)
+        asciiVal += i * v[i];
+
+    int seed = (v.size() << asciiVal) + asciiVal;
+
+    seed += toDec(compress(this->vectorInput, 4));
+
+    // auto stop = hrClock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    // std::cout << "generate seed: " << duration.count() * 1e-9 << "\n";
     return seed;
 }
 
-std::string Hash::compress(std::string hex, int length) {
-    while (hex.length() > length) {
-        char last = hex.back();
-        int index = hex.length() % length;
-        
-        char newValue = toHex(toDec(last) + toDec(hex[index])).back();
-        hex[index] = newValue;
+std::string Hash::compress(std::vector<char> hex, int length) {
+    // auto start = hrClock::now();
 
-        hex.pop_back();
+    if (hex.size() > length) {
+        std::vector<char> overflow(hex.begin() + length, hex.end());
+        std::vector<char> hash(hex.begin(), hex.begin() + length);
+
+        int chunks = std::ceil(overflow.size() / (float)length);
+
+        for (int i = 0; i < chunks; i++)
+            std::transform(hash.begin(), hash.end(), overflow.begin() + length * i, hash.begin(), std::plus<int>());
+
+        std::stringstream ss;
+        for (char c:hash)
+            ss << std::hex << abs(c % 16) << "";
+
+        return ss.str();
+
+    } else {
+        std::stringstream ss;
+        for (char c:hex)
+            ss << std::hex << abs(c % 16) << "";
+
+        return ss.str();
     }
 
-    return hex;
+
+    // auto stop = hrClock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    // std::cout << "compress: " << duration.count() * 1e-9 << "\n";
 }
 
 std::string Hash::toHex(std::string str) {

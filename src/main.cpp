@@ -2,8 +2,10 @@
 #include <string>
 #include <fstream>
 #include <chrono>
+#include <vector>
 
 #include "../include/hash.hpp"
+#include "../include/SHA256.hpp"
 
 using hrClock = std::chrono::high_resolution_clock;
 
@@ -21,6 +23,16 @@ int main(int argc, char** argv) {
 
     Hash h256;
     
+    // input = readFile("konstitucija.txt");
+    // auto start = hrClock::now();
+    // std::string hash = h256.hash(input);
+    // // std::string hash = sha256(input);
+    // auto stop = hrClock::now();
+    // std::cout << hash << "\n";
+    // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+    // std::cout << duration.count() * 1e-9 << "\n";
+
+
     if (argc == 1) {
         std::cout << "Iveskite teksta\n";
         std::cin >> input;
@@ -28,10 +40,12 @@ int main(int argc, char** argv) {
     } else {
         for (int i = 1; i < argc; i++) {
             input = readFile(argv[i]);
+            // input = readFile("konstitucija.txt");
             std::cout << input << "|";
 
             auto start = hrClock::now();
-            std::string hash = h256.hash(input);
+            // std::string hash = h256.hash(input);
+            std::string hash = sha256(input);
             auto stop = hrClock::now();
 
             std::cout << hash << "|";
