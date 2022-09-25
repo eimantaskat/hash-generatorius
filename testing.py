@@ -1,12 +1,11 @@
 import math
-from re import M
+from operator import index
 import subprocess
 import string
-from more_itertools import locate
-from multiprocessing import Pool
 import time
+import pandas as pd
 
-from testFiles import TestFiles
+from Filegen import Filegen
 
 class bcolors:
     HEADER = '\033[95m'
@@ -20,12 +19,12 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 def similarity(str1: string, str2: string):
-    matchingSymbols = 0
+    matching_symbols = 0
     for i in range(len(str1)):
         if str1[i] == str2[i]:
-            matchingSymbols += 1
+            matching_symbols += 1
 
-    return matchingSymbols / len(str1)
+    return matching_symbols / len(str1)
 
 def collision(res1, res2):
     if res1["hash"] != res2["hash"]:
@@ -34,198 +33,245 @@ def collision(res1, res2):
         return False
     return True
 
-def analyse(hashes):
-    totalHashes = len(hashes)
+def analyse(hashes, time = True, length = True, collisions = True, type = "strings", amount = -1):
+    total_hashes = len(hashes)
 
-    totalTime = 0
-    minTime = hashes[0]["time"]
-    maxTime = hashes[0]["time"]
+    total_time = 0
+    if time:
+        min_time = hashes[0]["time"]
+        max_time = hashes[0]["time"]
     
-    totalInputLength = 0
-    totalHashLength = 0
+    total_input_length = 0
+    if length:
+        total_hash_length = 0
 
-    collisions = 0
+    if collisions:
+        colls = 0 # collisions
 
     for i in range(len(hashes)):
-        totalTime += hashes[i]["time"]
+        total_time += hashes[i]["time"]
+        if time:
 
-        if hashes[i]["time"] > maxTime:
-            maxTime = hashes[i]["time"]
+            if hashes[i]["time"] > max_time:
+                max_time = hashes[i]["time"]
 
-        if hashes[i]["time"] < minTime:
-            minTime = hashes[i]["time"]
+            if hashes[i]["time"] < min_time:
+                min_time = hashes[i]["time"]
 
-        totalInputLength += len(hashes[i]["input"])
-        totalHashLength += len(hashes[i]["hash"])
+        total_input_length += len(hashes[i]["input"])
+        if length:
+            total_hash_length += len(hashes[i]["hash"])
 
-        for j in range(i, len(hashes)):
-            if collision(hashes[i], hashes[j]):
-                collisions += 1
+        if collisions:
+            for j in range(i, len(hashes)):
+                if collision(hashes[i], hashes[j]):
+                    colls += 1
 
-    print(f"Hashed {totalHashes} strings ({totalInputLength} symbols) in {round(totalTime, 5)}s")
-    print(f"Average hash time: {round(totalTime / totalHashes, 5)}s")
-    print(f"Max hash time: {round(maxTime, 5)}s")
-    print(f"Min hash time: {round(minTime, 5)}s")
+    print(f"Hashed {total_hashes if amount == -1 else amount} {type} ({total_input_length} symbols) in {total_time:.5f}s")
+    if time:
+        print(f"Average hash time: {(total_time / total_hashes):.5f}s")
+        print(f"Max hash time: {max_time:.5f}s")
+        print(f"Min hash time: {min_time:.5f}s")
 
-    print(f"Average input length: {round(totalInputLength / totalHashes, 5)}")
-    print(f"Average hash length: {bcolors.OKGREEN if totalHashLength / totalHashes == 64 else bcolors.FAIL}{totalHashLength / totalHashes}{bcolors.ENDC}")
-    print(f"Collisions: {bcolors.OKGREEN if collisions == 0 else bcolors.FAIL}{collisions}{bcolors.ENDC}")
+    if length:
+        print(f"Average input length: {(total_input_length / total_hashes):.5f}")
+        print(f"Average hash length: {bcolors.OKGREEN if total_hash_length / total_hashes == 64 else bcolors.FAIL}{total_hash_length / total_hashes}{bcolors.ENDC}")
+    
+    if collisions:
+        print(f"Collisions: {bcolors.OKGREEN if colls == 0 else bcolors.FAIL}{colls}{bcolors.ENDC}")
 
-def parallerHash(files, poolSize):
-    results = []
-
-    with Pool(poolSize) as pool:
-        result = pool.map_async(hash, files)
-        results += result.get()
-
-    return results
-
-def printHashes(results):
+def print_hashes(results):
     for result in results:
         print(result["hash"])
 
-def printHashes(results0, results1):
-    for i in range(len(results0)):
-        print(results0[i]["hash"], results1[i]["hash"])
+def print_hashes(results1, results2):
+    for i in range(len(results1)):
+        print(results1[i]["hash"], results2[i]["hash"])
 
-def firstTest(filegen):
-    filesOneSymbol = filegen.singleSymbol(5, existingFiles = True)
-    filesRandSymbols = filegen.randomSymbols(5, 10000, existingFiles = True)
-    filesSimSymbols = filegen.similarSymbols(5, 10000, existingFiles = True)
-    emptyFiles = filegen.emptyFiles(5, existingFiles = True)
+def test_1(fg):
+    one_symbol_f = fg.generate_one_symbol(2, keep_existing = True)
+    rand_symbols_f = fg.generate_random_symbols(2, 10000, keep_existing = True)
+    sim_symbols_f = fg.generate_simillar_symbols(2, 10000, keep_existing = True)
+    empty_f = fg.generate_empty_files(2, keep_existing = True)
 
-    for files in [filesOneSymbol, filesRandSymbols, filesSimSymbols, emptyFiles]:
+    print(f"Pirmas hash'avimas{' ' * 47}Antras hash'avimas")
+
+    for files in [one_symbol_f, rand_symbols_f, sim_symbols_f, empty_f]:
+        if files == one_symbol_f:
+            print("Inputa'ai - failai su vienu simboliu:")
+        elif files == rand_symbols_f:
+            print("\nInputa'ai - failai su 10 000 atsitiktinių simbolių:")
+        elif files == sim_symbols_f:
+            print("\nInputa'ai - 10 000 simbolių failai, kurie skiriasi nuo pirmo failo vienu simboliu:")
+        elif files == empty_f:
+            print("\nInputa'ai - tušti failai:")
         results1 = []
         results2 = []
         
-        results1 = hash(files)
+        results1 = hash(files, "-f")
 
-        results2 = hash(files)
+        results2 = hash(files, "-f")
 
-        printHashes(results1, results2)
-        print()
+        print_hashes(results1, results2)
 
-def secondTest(filegen):
-    filesConstitution = filegen.getLines("konstitucija.txt")
+def test_2(fg):
+    times = []
+    passes = 20
 
-    results = hash(filesConstitution)
+    f = "konstitucija.txt"
 
-    analyse(results)
+    file = open(f, encoding="utf8")
+    lines = file.readlines()
+    file.close()
 
-def thirdTest(filegen):
+    indexes = []
+
+    i = 1
+    while i < len(lines):
+        indexes.append(i) 
+        i *= 2
+
+    indexes.append(len(lines))
+
+
+    for _ in range(passes):
+        time = []
+        for i in indexes:
+            tmp_f = open("tmp.txt", "w", encoding="utf8")
+            tmp_f.write("".join(lines[0:i])[0:-1])
+            tmp_f.close()
+
+            results = hash(["tmp.txt"], "-f")
+            time.append(results[0]["time"])
+            # analyse(results, time=False, length=False, collisions=False, amount=i, type="lines")
+
+        times.append(time)
+            
+    times = [sum(x) for x in zip(*times)]
+
+    print(f"Test was run {passes} times\nAverage results:")
+    for i in range(len(indexes)):
+        print(f"{indexes[i]} lines: {times[i] / passes:.5f}s")
+
+def test_3(fg):
     collisions = 0
+    results = []
 
-    pairs_10 = filegen.getFileList("testFiles/pairs_10")
-    pairs_100 = filegen.getFileList("testFiles/pairs_100")
-    pairs_500 = filegen.getFileList("testFiles/pairs_500")
-    pairs_1000 = filegen.getFileList("testFiles/pairs_1000")
+    pairs_10 = fg.generate_pairs(25000, 10, keep_existing = False)
+    pairs_100 = fg.generate_pairs(25000, 100, keep_existing = False)
+    pairs_500 = fg.generate_pairs(25000, 500, keep_existing = False)
+    pairs_1000 = fg.generate_pairs(25000, 1000, keep_existing = False)
 
-    testFiles = pairs_10 + pairs_100 + pairs_500 + pairs_1000
+    f = [pairs_10, pairs_100, pairs_500, pairs_1000]
 
-    filesPerChunk = 500
+    results = hash(f, "-l")
+    for i in range(0, len(results), 2):
+        if collision(results[i], results[i + 1]):
+            collisions += 1
 
-    l = len(testFiles)
-    chunkSize = math.ceil(l / (l / filesPerChunk))
-
-    chunks = [testFiles[x:x + chunkSize] for x in range(0, len(testFiles), chunkSize)]
-
-    for chunk in chunks:
-        results = hash(chunk)
-        for i in range(0, len(results), 2):
-            hashes += 2
-            if collision(results[i], results[i + 1]):
-                collisions += 1
-
-    print(f"Number of collisions: {collisions}")
+    analyse(results, collisions=False)
+    print(f"Number of collisions: {bcolors.OKGREEN if collisions == 0 else bcolors.FAIL}{collisions}{bcolors.ENDC}")
 
 
-def fourthTest(filegen):
-    files = 0
-    hexSimillarity = 0
-    maxHex = 0
-    minHex = 100
+def test_4(fg):
+    results = []
 
-    bitsSimillarity = 0
-    maxBits = 0
-    minBits = 100
+    hex_simillarity = 0
+    max_hex = 0
+    min_hex = 100
+
+    bits_simillarity = 0
+    max_bits = 0
+    min_bits = 100
     
-    pairs_10 = filegen.getFileList("testFiles/similarPairs_10")
-    pairs_100 = filegen.getFileList("testFiles/similarPairs_100")
-    pairs_500 = filegen.getFileList("testFiles/similarPairs_500")
-    pairs_1000 = filegen.getFileList("testFiles/similarPairs_1000")
+    pairs_10 = fg.generate_similar_pairs(25000, 10, keep_existing = True)
+    pairs_100 = fg.generate_similar_pairs(25000, 100, keep_existing = True)
+    pairs_500 = fg.generate_similar_pairs(25000, 500, keep_existing = True)
+    pairs_1000 = fg.generate_similar_pairs(25000, 1000, keep_existing = True)
 
-    testFiles = pairs_10 + pairs_100 + pairs_500 + pairs_1000
+    f = [pairs_10, pairs_100, pairs_500, pairs_1000]
 
-    filesPerChunk = 500
+    results = hash(f, "-l")
 
-    l = len(testFiles)
-    chunkSize = math.ceil(l / (l / filesPerChunk))
+    s = 0
+    for i in range(0, len(results), 2):          
+        hash1 = results[i]["hash"]
+        hash2 = results[i + 1]["hash"]
+        sim = similarity(hash1, hash2) * 100
 
-    chunks = [testFiles[x:x + chunkSize] for x in range(0, len(testFiles), chunkSize)]
+        if max_hex < sim:
+            max_hex = sim
+        if min_hex > sim:
+            min_hex = sim
 
-    for chunk in chunks:
-        results = hash(chunk)
-        for i in range(0, len(results), 2):
-            files += 2
-            
-            hash1 = results[i]["hash"]
-            hash2 = results[i + 1]["hash"]
-            sim = similarity(hash1, hash2) * 100
+        hex_simillarity += sim
 
-            if maxHex < sim:
-                maxHex = sim
-            if minHex > sim:
-                minHex = sim
+        hash1_binary = str(bin(int(hash1, 16))[2:]).rjust(256, "0")
+        hash2_binary = str(bin(int(hash2, 16))[2:]).rjust(256, "0")
+        
+        sim = similarity(hash1_binary, hash2_binary) * 100
 
-            hexSimillarity += sim
+        if max_bits < sim:
+            max_bits = sim
+        if min_bits > sim:
+            min_bits = sim
 
-            hash1Binary = str(bin(int(hash1, 16))[2:]).rjust(256, "0")
-            hash2Binary = str(bin(int(hash2, 16))[2:]).rjust(256, "0")
-            
-            sim = similarity(hash1Binary, hash2Binary) * 100
+        bits_simillarity += sim
 
-            if maxBits < sim:
-                maxBits = sim
-            if minBits > sim:
-                minBits = sim
-
-            bitsSimillarity += sim
+    #     if sim == 100:
+    #         # print(results[i], results[i+1])
+    #         s += 1
+    # print(f"{s = }")
     
-    print(f"Average hex simillarity: {round(hexSimillarity / len(testFiles), 5)}%")
-    print(f"Min hex simillarity: {round(minHex, 5)}%")
-    print(f"Max hex simillarity: {round(maxHex, 5)}%")
+    analyse(results, collisions=False)
     print()
-    print(f"Average bits simillarity: {round(bitsSimillarity / len(testFiles), 5)}%")
-    print(f"Min bits simillarity: {round(minBits, 5)}%")
-    print(f"Max bits simillarity: {round(maxBits, 5)}%")
+    print(f"Average hex simillarity: {(hex_simillarity / len(results)):.5f}%")
+    print(f"Min hex simillarity: {min_hex:.2f}%")
+    print(f"Max hex simillarity: {max_hex:.2f}%")
+    print()
+    print(f"Average bits simillarity: {(bits_simillarity / len(results)):.5f}%")
+    print(f"Min bits simillarity: {min_bits:.2f}%")
+    print(f"Max bits simillarity: {max_bits:.2f}%")
 
-def hash(file):
-    command = "./main " + " ".join(file)
+def hash(file, flag):
+    command = "./main " + flag + " " + " ".join(file)
 
     output = subprocess.run(command, stdout=subprocess.PIPE)
-    output = output.stdout.decode('utf-8').replace("\r", "").split("\n")[0:-1]
+    output_file = output.stdout.decode('utf-8')
 
     results = []
+
+    file = open(output_file, "r", encoding="utf8")
+    output = file.read().split("|")[0:-1]
+    file.close()
+
     for i in range(0, len(output), 3):
         result = {
-            "input" :output[i],
-            "hash": output[i+1],
-            "time": float(output[i+2])
+            "input": output[i],
+            "hash": output[i + 1],
+            "time": float(output[i + 2])
         }
         results.append(result)
 
     return results
 
 def main():
-    filegen = TestFiles(newLines=False, punctuation=False)
+    fg = Filegen(new_lines=False, punctuation=False)
 
-    # firstTest(filegen)
-    # secondTest(filegen)
-    # thirdTest(filegen)
-    fourthTest(filegen)
+    print("--- Output'ų dydžio, to paties failo hash'o testavimas ---")
+    test_1(fg)
+
+    print("\n--- Hash funkcijos efektyvumo testavimas: kostitucijos eilučių hash'avimas ---")
+    test_2(fg)
+
+    print("\n--- Atsparumo kolizijai testavimas: 25 000 porų po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas ---")
+    test_3(fg)
+
+    print("\n--- Lavinos efekto testavimas: 25 000 porų (poros simbolių eilutės skiriasi 1 simboliu), po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas ---")
+    test_4(fg)
 
 
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print(f"--- Testing completed in {(time.time() - start_time):.2f} seconds ---")

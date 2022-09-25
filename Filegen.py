@@ -240,55 +240,45 @@ class Filegen():
 
         return files
 
-    def generate_similar_pairs(self, number_of_pairs: int, num_of_symbols: int, keep_existing = False) -> list[str]:
+    def generate_similar_pairs(self, number_of_pairs: int, string_length: int, keep_existing = False) -> list[str]:
         """ Function to generate pairs of strings that differ by one symbol\n
         Args:
             number_of_pairs: Number of pairs to generate
-            string_pairs: Length of generated strings. Defaults to 0, which makes length random
+            string_length: Length of generated strings. Defaults to 0, which makes length random
             keep_existing: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the generated file pairs
         """
 
+        file_name = f"{self.__file_folder}/similar_pairs/{string_length}.txt"
+
+
         if keep_existing:
-            try:
-                if os.listdir(f"{self.__file_folder}/similar_pairs_{num_of_symbols}/"):
-                    return [f"{self.__file_folder}/similar_pairs_{num_of_symbols}/{dir}" for dir in os.listdir(f"{self.__file_folder}/similar_pairs_{num_of_symbols}/")]
-            except FileNotFoundError:
-                pass
-
-        self.__clear_folder(f"{self.__file_folder}/similar_pairs_{num_of_symbols}/")
-
-        if number_of_pairs < 1:
-            return []
+            if os.path.exists(file_name):
+                return file_name
         
         characters = self.__get_chars()
 
-
-        files = []
+        f = open(file_name, "w")
 
         for i in range(0, number_of_pairs):
-            base_string = self.__random_str(num_of_symbols)
-            str = base_string
+            if i != 0:
+                f.write("\n")
+                
+            base_str = self.__random_str(string_length)
+            str = base_str
 
-            while str == base_string:
+            while str == base_str:
                 char = random.choice(characters)
-                index = random.randint(0, num_of_symbols - 1)
+                index = random.randint(0, string_length - 1)
                 str = str[0:index] + char + str[index + 1: ]
 
-            file_names = [f"{self.__file_folder}/similar_pairs_{num_of_symbols}/{i}_0.txt", f"{self.__file_folder}/similar_pairs_{num_of_symbols}/{i}_1.txt"]
-
-            f = open(file_names[0], "w")
-            f.write(base_string)
-            f.close()
-
-            f = open(file_names[1], "w")
+            f.write(base_str + "\n")
             f.write(str)
-            f.close()
 
-            files.append(file_names)
+        f.close()
 
-        return files
+        return file_name
 
     def generate_empty_files(self, num_of_files: int, keep_existing = False) -> list[str]:
         """ Function to generate empty text files\n
@@ -320,49 +310,43 @@ class Filegen():
 
         return files
 
-    def generate_pairs(self, number_of_pairs: int, string_pairs = 0, keep_existing = False) -> list[list[str]]:
+    def generate_pairs(self, number_of_pairs: int, string_length = 0, keep_existing = False) -> list[list[str]]:
         """ Function to generate strings pairs of random length\n
         Args:
             number_of_pairs: Number of pairs to generate
-            string_pairs: Length of generated strings. Defaults to 0, which makes length random
+            string_length: Length of generated strings. Defaults to 0, which makes length random
             keep_existing: If true, checks for existing files and returns them if found. Defaults to False
         Returns:
             List of the generated file pairs
         """
 
-        if keep_existing:
-            try:
-                if os.listdir(f"{self.__file_folder}/pairs_{string_pairs}/"):
-                    return [f"{self.__file_folder}/pairs_{string_pairs}/{dir}" for dir in os.listdir(f"{self.__file_folder}/pairs_{string_pairs}/")]
-            except FileNotFoundError:
-                pass
+        file_name = f"{self.__file_folder}/pairs/{string_length}.txt"
 
-        self.__clear_folder(f"{self.__file_folder}/pairs_{string_pairs}/")
+        if keep_existing:
+            if os.path.exists(file_name):
+                return file_name
         
-        files = []
+        f = open(file_name, "w")
 
         for i in range(number_of_pairs):
-            if not string_pairs:
+            if i != 0:
+                f.write("\n")
+
+            if not string_length:
                 length = random.randint(0, 1000)
             else:
-                length = string_pairs
+                length = string_length
 
             str0 = self.__random_str(length)
             str1 = self.__random_str(length)
 
-            file_names = [f"{self.__file_folder}/pairs_{string_pairs}/{i}_0.txt", f"{self.__file_folder}/pairs_{string_pairs}/{i}_1.txt"]
 
-            f = open(file_names[0], "w")
-            f.write(str0)
-            f.close()
-            f = open(file_names[1], "w")
+            f.write(str0 + "\n")
             f.write(str1)
-            f.close()
 
-            files.append(file_names[0])
-            files.append(file_names[1])
+        f.close()
 
-        return files
+        return file_name
 
     def get_lines(self, file = "./konstitucija.txt", keep_existing = False) -> list[str]:
         """ Function to split single text file into files containing one line each\n
