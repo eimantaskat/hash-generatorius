@@ -81,15 +81,19 @@ std::string Hash::compress(std::vector<char> hex, int length) {
     //     std::cout << c;
     // std::cout << "\n";
 
-    while (hex.size() > length) {
+    int size = hex.size();
+
+    while (size > length) {
         char last = hex.back();
-        int index = hex.size() % length;
+        int index = size % length;
         
         char newValue = last + hex[index];
         hex[index] = newValue;
 
-        hex.pop_back();
+        size--;
     }
+
+    hex.resize(size);
 
     // for (int c:hex) {
     //     std::cout << abs(c) << " ";
