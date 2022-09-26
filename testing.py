@@ -33,7 +33,7 @@ def collision(res1, res2):
         return False
     return True
 
-def analyse(hashes, time = True, length = True, collisions = True, type = "strings", amount = -1):
+def analyse(hashes, time = True, length = True, collisions = True, type = "simbolių eillučių", amount = -1):
     total_hashes = len(hashes)
 
     total_time = 0
@@ -67,18 +67,18 @@ def analyse(hashes, time = True, length = True, collisions = True, type = "strin
                 if collision(hashes[i], hashes[j]):
                     colls += 1
 
-    print(f"Hashed {total_hashes if amount == -1 else amount} {type} ({total_input_length} symbols) in {total_time:.5f}s")
+    print(f"Suhash'inta {total_hashes if amount == -1 else amount} {type} ({total_input_length} simbolių) per {total_time:.5f}s")
     if time:
-        print(f"Average hash time: {(total_time / total_hashes):.5f}s")
-        print(f"Max hash time: {max_time:.5f}s")
-        print(f"Min hash time: {min_time:.5f}s")
+        print(f"Vidutinis hash'avimo laikas: {(total_time / total_hashes):.5f}s")
+        print(f"Didžiausias hash'avimo laikas: {max_time:.5f}s")
+        print(f"Mažiausias hash'avimo laikas: {min_time:.5f}s")
 
     if length:
-        print(f"Average input length: {(total_input_length / total_hashes):.5f}")
-        print(f"Average hash length: {bcolors.OKGREEN if total_hash_length / total_hashes == 64 else bcolors.FAIL}{total_hash_length / total_hashes}{bcolors.ENDC}")
+        print(f"Vidutinis input'o ilgis: {(total_input_length / total_hashes):.5f}")
+        print(f"Vidutinis hash'o ilgis: {bcolors.OKGREEN if total_hash_length / total_hashes == 64 else bcolors.FAIL}{total_hash_length / total_hashes}{bcolors.ENDC}")
     
     if collisions:
-        print(f"Collisions: {bcolors.OKGREEN if colls == 0 else bcolors.FAIL}{colls}{bcolors.ENDC}")
+        print(f"Kolizijos: {bcolors.OKGREEN if colls == 0 else bcolors.FAIL}{colls}{bcolors.ENDC}")
 
 def print_hashes(results):
     for result in results:
@@ -88,11 +88,11 @@ def print_hashes(results1, results2):
     for i in range(len(results1)):
         print(results1[i]["hash"], results2[i]["hash"])
 
-def test_1(fg):
-    one_symbol_f = fg.generate_one_symbol(2, keep_existing = True)
-    rand_symbols_f = fg.generate_random_symbols(2, 10000, keep_existing = True)
-    sim_symbols_f = fg.generate_simillar_symbols(2, 10000, keep_existing = True)
-    empty_f = fg.generate_empty_files(2, keep_existing = True)
+def test_1(fg, regen_files = False):
+    one_symbol_f = fg.generate_one_symbol(2, keep_existing = not regen_files)
+    rand_symbols_f = fg.generate_random_symbols(2, 10000, keep_existing = not regen_files)
+    sim_symbols_f = fg.generate_simillar_symbols(2, 10000, keep_existing = not regen_files)
+    empty_f = fg.generate_empty_files(2, keep_existing = not regen_files)
 
     print(f"Pirmas hash'avimas{' ' * 47}Antras hash'avimas")
 
@@ -114,7 +114,7 @@ def test_1(fg):
 
         print_hashes(results1, results2)
 
-def test_2(fg):
+def test_2(fg, regen_files = False):
     times = []
     passes = 20
 
@@ -143,24 +143,23 @@ def test_2(fg):
 
             results = hash(["tmp.txt"], "-f")
             time.append(results[0]["time"])
-            # analyse(results, time=False, length=False, collisions=False, amount=i, type="lines")
 
         times.append(time)
             
     times = [sum(x) for x in zip(*times)]
 
-    print(f"Test was run {passes} times\nAverage results:")
+    print(f"{passes} hash'avimų vidurkis:")
     for i in range(len(indexes)):
-        print(f"{indexes[i]} lines: {times[i] / passes:.5f}s")
+        print(f"{indexes[i]} eilutės: {times[i] / passes:.5f}s")
 
-def test_3(fg):
+def test_3(fg, regen_files = False):
     collisions = 0
     results = []
 
-    pairs_10 = fg.generate_pairs(25000, 10, keep_existing = False)
-    pairs_100 = fg.generate_pairs(25000, 100, keep_existing = False)
-    pairs_500 = fg.generate_pairs(25000, 500, keep_existing = False)
-    pairs_1000 = fg.generate_pairs(25000, 1000, keep_existing = False)
+    pairs_10 = fg.generate_pairs(25000, 10, keep_existing = not regen_files)
+    pairs_100 = fg.generate_pairs(25000, 100, keep_existing = not regen_files)
+    pairs_500 = fg.generate_pairs(25000, 500, keep_existing = not regen_files)
+    pairs_1000 = fg.generate_pairs(25000, 1000, keep_existing = not regen_files)
 
     f = [pairs_10, pairs_100, pairs_500, pairs_1000]
 
@@ -170,10 +169,10 @@ def test_3(fg):
             collisions += 1
 
     analyse(results, collisions=False)
-    print(f"Number of collisions: {bcolors.OKGREEN if collisions == 0 else bcolors.FAIL}{collisions}{bcolors.ENDC}")
+    print(f"Kolizijos: {bcolors.OKGREEN if collisions == 0 else bcolors.FAIL}{collisions}{bcolors.ENDC}")
 
 
-def test_4(fg):
+def test_4(fg, regen_files = False):
     results = []
 
     hex_simillarity = 0
@@ -184,10 +183,10 @@ def test_4(fg):
     max_bits = 0
     min_bits = 100
     
-    pairs_10 = fg.generate_similar_pairs(25000, 10, keep_existing = True)
-    pairs_100 = fg.generate_similar_pairs(25000, 100, keep_existing = True)
-    pairs_500 = fg.generate_similar_pairs(25000, 500, keep_existing = True)
-    pairs_1000 = fg.generate_similar_pairs(25000, 1000, keep_existing = True)
+    pairs_10 = fg.generate_similar_pairs(25000, 10, keep_existing = not regen_files)
+    pairs_100 = fg.generate_similar_pairs(25000, 100, keep_existing = not regen_files)
+    pairs_500 = fg.generate_similar_pairs(25000, 500, keep_existing = not regen_files)
+    pairs_1000 = fg.generate_similar_pairs(25000, 1000, keep_existing = not regen_files)
 
     f = [pairs_10, pairs_100, pairs_500, pairs_1000]
 
@@ -225,13 +224,13 @@ def test_4(fg):
     
     analyse(results, collisions=False)
     print()
-    print(f"Average hex simillarity: {(hex_simillarity / len(results)):.5f}%")
-    print(f"Min hex simillarity: {min_hex:.2f}%")
-    print(f"Max hex simillarity: {max_hex:.2f}%")
+    print(f"Vidutinis hex'ų panašumas: {(hex_simillarity / len(results)):.5f}%")
+    print(f"Mažiausias hex'ų panašumas: {min_hex:.2f}%")
+    print(f"Didžiausias hex'ų panašumas: {max_hex:.2f}%")
     print()
-    print(f"Average bits simillarity: {(bits_simillarity / len(results)):.5f}%")
-    print(f"Min bits simillarity: {min_bits:.2f}%")
-    print(f"Max bits simillarity: {max_bits:.2f}%")
+    print(f"Vidutinis bitų panašumas: {(bits_simillarity / len(results)):.5f}%")
+    print(f"Mažiausias bitų panašumas: {min_bits:.2f}%")
+    print(f"Didžiausias bitų panašumas: {max_bits:.2f}%")
 
 def hash(file, flag):
     command = "./main " + flag + " " + " ".join(file)
@@ -257,21 +256,22 @@ def hash(file, flag):
 
 def main():
     fg = Filegen(new_lines=False, punctuation=False)
+    regen_files = False
 
     print("--- Output'ų dydžio, to paties failo hash'o testavimas ---")
-    test_1(fg)
+    test_1(fg, regen_files)
 
     print("\n--- Hash funkcijos efektyvumo testavimas: kostitucijos eilučių hash'avimas ---")
-    test_2(fg)
+    test_2(fg, regen_files)
 
     print("\n--- Atsparumo kolizijai testavimas: 25 000 porų po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas ---")
-    test_3(fg)
+    test_3(fg, regen_files)
 
     print("\n--- Lavinos efekto testavimas: 25 000 porų (poros simbolių eilutės skiriasi 1 simboliu), po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas ---")
-    test_4(fg)
+    test_4(fg, regen_files)
 
 
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print(f"--- Testing completed in {(time.time() - start_time):.2f} seconds ---")
+    print(f"--- Testavimas baigtas per {(time.time() - start_time):.2f} s ---")

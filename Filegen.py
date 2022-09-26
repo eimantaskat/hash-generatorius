@@ -259,6 +259,10 @@ class Filegen():
         
         characters = self.__get_chars()
 
+        try:
+            open(file_name, "w")
+        except FileNotFoundError:
+            os.mkdir(f"{self.__file_folder}/similar_pairs")
         f = open(file_name, "w")
 
         for i in range(0, number_of_pairs):
@@ -326,8 +330,12 @@ class Filegen():
             if os.path.exists(file_name):
                 return file_name
         
-        f = open(file_name, "w")
+        try:
+            open(file_name, "w")
+        except FileNotFoundError:
+                os.mkdir(f"{self.__file_folder}/pairs")
 
+        f = open(file_name, "w")
         for i in range(number_of_pairs):
             if i != 0:
                 f.write("\n")
