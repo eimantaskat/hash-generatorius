@@ -3,7 +3,6 @@
 #include <string>
 #include <random>
 #include <sstream>
-#include <bitset>
 #include <vector>
 #include <algorithm>
 
@@ -24,7 +23,5 @@ class Hash {
 
         std::string toHex(std::string);
         std::string toHex(int);
-        std::string toBits(std::string);
-        int toDec(char);
         int toDec(std::string);
 };

@@ -4,3 +4,4 @@
 test_files
 __pycache__
 SHA256*
+*.xlsx

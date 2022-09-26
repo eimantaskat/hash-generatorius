@@ -3,7 +3,6 @@
 #include <fstream>
 #include <chrono>
 #include <vector>
-#include<string.h>
 
 #include "../include/hash.hpp"
 #include "../include/SHA256.hpp"
@@ -61,16 +60,6 @@ int main(int argc, char** argv) {
     std::string input;
 
     Hash h256;
-    
-    // input = readFile("konstitucija.txt");
-    // auto start = hrClock::now();
-    // std::string hash = h256.hash(input);
-    // // std::string hash = sha256(input);
-    // auto stop = hrClock::now();
-    // std::cout << hash << "\n";
-    // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
-    // std::cout << duration.count() * 1e-9 << "\n";
-
 
     if (argc == 1) {
         std::cout << "Iveskite teksta\n";
