@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "../include/hash.hpp"
-#include "../include/SHA256.hpp"
 
 using hrClock = std::chrono::high_resolution_clock;
 
@@ -77,7 +76,6 @@ int main(int argc, char** argv) {
                 auto start = hrClock::now();
 
                 std::string hash = h256.hash(input);
-                // std::string hash = sha256(input);
 
                 auto stop = hrClock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
