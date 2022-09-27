@@ -94,8 +94,6 @@ def test_1(fg, regen_files = False):
     sim_symbols_f = fg.generate_simillar_symbols(2, 10000, keep_existing = not regen_files)
     empty_f = fg.generate_empty_files(2, keep_existing = not regen_files)
 
-    print(one_symbol_f)
-
     print(f"Pirmas hash'avimas{' ' * 47}Antras hash'avimas")
 
     for files in [one_symbol_f, rand_symbols_f, sim_symbols_f, empty_f]:
@@ -235,7 +233,7 @@ def test_4(fg, regen_files = False):
     print(f"Didžiausias bitų panašumas: {max_bits:.2f}%")
 
 def hash(file, flag):
-    command = "./main " + flag + " " + " ".join(file)
+    command = "./hash-test " + flag + " " + " ".join(file)
 
     output = subprocess.run(command, stdout=subprocess.PIPE)
     output_file = output.stdout.decode('utf-8')

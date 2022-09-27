@@ -48,42 +48,68 @@ std::vector<std::string> readLines(std::string fileName) {
     return lines;
 }
 
+void writeData(std::string out, std::string fileName = "hash_output.txt") {
+    std::ofstream file (fileName);
+    file << out;
+    file.close();
+    std::cout << fileName;
+}
+
 int main(int argc, char** argv) {
     std::string input;
 
     Hash h256;
 
     if (argc == 1) {
-        std::cout << "Iveskite teksta: ";
+        std::cout << "Iveskite teksta\n";
         std::cin >> input;
         std::cout << h256.hash(input) << "\n";
     } else {
         if (std::string(argv[1]) == "--file" || std::string(argv[1]) == "-f") {
 
+            std::stringstream output;
+
             for (int i = 2; i < argc; i++) {
                 input = readFile(argv[i]);
-                std::cout << input << ": ";
+                output << input << "|";
+
+                auto start = hrClock::now();
 
                 std::string hash = h256.hash(input);
 
-                std::cout << hash << "\n";
+                auto stop = hrClock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+
+                output << hash << "|";
+                output << duration.count() * 1e-9 << "|";
             }
-            
+
+            writeData(output.str());
+
         } else if (std::string(argv[1]) == "--lines" || std::string(argv[1]) == "-l") {
 
+            std::stringstream output;
 
             for (int i = 2; i < argc; i++) {
                 std::vector<std::string> input = readLines(argv[i]);
 
                 for (std::string line:input) {
-                    std::cout << line << ": ";
+                    output << line << "|";
+                    auto start = hrClock::now();
 
                     std::string hash = h256.hash(line);
 
-                    std::cout << hash << "\n";
+                    auto stop = hrClock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start);
+
+                    output << hash << "|";
+                    output << duration.count() * 1e-9 << "|";
                 }
 
             }
+
+            writeData(output.str());
+
         }
     }
     
