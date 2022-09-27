@@ -94,6 +94,8 @@ def test_1(fg, regen_files = False):
     sim_symbols_f = fg.generate_simillar_symbols(2, 10000, keep_existing = not regen_files)
     empty_f = fg.generate_empty_files(2, keep_existing = not regen_files)
 
+    print(one_symbol_f)
+
     print(f"Pirmas hash'avimas{' ' * 47}Antras hash'avimas")
 
     for files in [one_symbol_f, rand_symbols_f, sim_symbols_f, empty_f]:
@@ -255,7 +257,7 @@ def hash(file, flag):
     return results
 
 def main():
-    fg = Filegen(new_lines=False, punctuation=False)
+    fg = Filegen(new_lines=False, punctuation=False, file_folder="./test_files")
     regen_files = False
 
     print("--- Output'ų dydžio, to paties failo hash'o testavimas ---")
