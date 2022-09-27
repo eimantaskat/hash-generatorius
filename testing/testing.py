@@ -1,22 +1,9 @@
-import math
-from operator import index
+import os
 import subprocess
 import string
 import time
-import pandas as pd
 
 from Filegen import Filegen
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 def similarity(str1: string, str2: string):
     matching_symbols = 0
@@ -75,10 +62,10 @@ def analyse(hashes, time = True, length = True, collisions = True, type = "simbo
 
     if length:
         print(f"Vidutinis input'o ilgis: {(total_input_length / total_hashes):.5f}")
-        print(f"Vidutinis hash'o ilgis: {bcolors.OKGREEN if total_hash_length / total_hashes == 64 else bcolors.FAIL}{total_hash_length / total_hashes}{bcolors.ENDC}")
+        print(f"Vidutinis hash'o ilgis: {total_hash_length / total_hashes}")
     
     if collisions:
-        print(f"Kolizijos: {bcolors.OKGREEN if colls == 0 else bcolors.FAIL}{colls}{bcolors.ENDC}")
+        print(f"Kolizijos: {colls}")
 
 def print_hashes(results):
     for result in results:
@@ -169,7 +156,7 @@ def test_3(fg, regen_files = False):
             collisions += 1
 
     analyse(results, collisions=False)
-    print(f"Kolizijos: {bcolors.OKGREEN if collisions == 0 else bcolors.FAIL}{collisions}{bcolors.ENDC}")
+    print(f"Kolizijos: {collisions}")
 
 
 def test_4(fg, regen_files = False):
@@ -269,6 +256,10 @@ def main():
 
     print("\n--- Lavinos efekto testavimas: 25 000 porų (poros simbolių eilutės skiriasi 1 simboliu), po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas ---")
     test_4(fg, regen_files)
+
+    os.remove("hash_output.txt")
+    os.remove("tmp.txt")
+    os.remove("hash-test.exe")
 
 
 if __name__ == "__main__":
