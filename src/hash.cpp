@@ -17,6 +17,24 @@ std::string Hash::hash(std::string str) {
     return compress(hash);
 }
 
+std::string Hash::hashWithSalt(std::string str, std::string salt) {
+    str += salt;
+    this->strInput = str;
+
+    this->vectorInput = toCharVector(str);
+
+    std::string k = generateKey(this->vectorInput);
+
+    std::vector<char> key = toCharVector(k);
+
+    std::vector<char> hash;
+    hash.reserve(key.size() + this->vectorInput.size());
+    hash.insert(hash.end(), key.begin(), key.end());
+    hash.insert(hash.end(), this->vectorInput.begin(), this->vectorInput.end());
+
+    return compress(hash);
+}
+
 std::vector<char> Hash::toCharVector(std::string str) {
     std::vector<char> v;
     v.reserve(str.length());

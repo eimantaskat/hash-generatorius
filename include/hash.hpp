@@ -10,6 +10,7 @@ class Hash {
     public:
         Hash() {};
         std::string hash(std::string);
+        std::string hashWithSalt(std::string, std::string);
     private:
         std::string strInput;
         std::vector<char> vectorInput;

@@ -15,12 +15,15 @@
    Flag'ai:
       --file arba -f: hash'inti visą failą
       --lines arba -l: atskirai hash'initi kiekvieną failo eitutę
+      --salt: pateikti salt'ą
+      -s: (naudojant kartu su -f arba -l) hashinti naudojant programos sugeneruotą salt'ą
+      -s: (įvedant duomenis ranka) prieš hash'inant kiekvieną input'ą programa paprašys įvesti salt'ą
 
    Args:
       Failai, kuriuos norite suhash'inti
 
    Pvz.:
-   > ./hash -f t1.txt t2.txt ... tn.txt
+   > ./hash -f t1.txt t2.txt ... tn.txt --salt="12345"
 
    Output'as:
       <input>: <hash>

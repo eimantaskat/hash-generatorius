@@ -257,9 +257,20 @@ def main():
     print("\n--- Lavinos efekto testavimas: 25 000 porų (poros simbolių eilutės skiriasi 1 simboliu), po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas ---")
     test_4(fg, regen_files)
 
-    os.remove("hash_output.txt")
-    os.remove("tmp.txt")
-    os.remove("hash-test.exe")
+    try:
+        os.remove("hash_output.txt")
+    except FileNotFoundError:
+        pass
+
+    try:
+        os.remove("tmp.txt")
+    except FileNotFoundError:
+        pass
+
+    try:
+        os.remove("hash-test.exe")
+    except FileNotFoundError:
+        pass
 
 
 if __name__ == "__main__":
