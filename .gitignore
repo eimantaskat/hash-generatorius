@@ -3,6 +3,8 @@
 .vscode
 test_files
 __pycache__
+MD5*
 SHA256*
+SHA1*
 *.xlsx
 !konstitucija.txt

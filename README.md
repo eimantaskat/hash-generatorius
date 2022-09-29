@@ -1,13 +1,13 @@
 # Hash generatorius
 
-## Atsisiuntimas ir build'inimas
+### Atsisiuntimas ir build'inimas
    ```console
    > git clone https://github.com/eimantaskat/hash-generatorius.git
    > cd hash-generatorius
    > make
    ```
 
-## Naudojimas
+### Naudojimas
 * Naudojant command line argumentus
    ```console
    > ./hash [Flag] <args>
@@ -35,13 +35,13 @@
     <hash>
   ```
 
-## Testavimo script'o naudojimas
+### Testavimo script'o naudojimas
    ```console
    > make test-run
    ```
    Bus sugeneruoti testavimo failai ir ištestuota hash funkcija. Rezultatai atspausdinami į komandinę eilutę
 
-# Hash funkcijos pseudo-kodas
+## Hash funkcijos pseudo-kodas
 ```c++
    Hash(string):
       v = toCharVector(string)
@@ -87,12 +87,12 @@
 
       return output
 ```
-# Hash funkcijos analizė
+## Hash funkcijos analizė
 
-## Output'ų dydžio, to paties failo hash'avimo testavimas
+### Output'ų dydžio, to paties failo hash'avimo testavimas
 Nepriklausomai nuo input'o, output'ai visada vienodo dydžio, o antrą kartą suhash'avus tą patį failą gaunamas toks pats hash'as
 
-### Testavimo script'o output'as:
+#### Testavimo script'o output'as:
 ```console
    Pirmas hash'avimas                                               Antras hash'avimas
    Inputa'ai - failai su vienu simboliu:
@@ -113,10 +113,10 @@ Nepriklausomai nuo input'o, output'ai visada vienodo dydžio, o antrą kartą su
 ```
 
 
-## Hash funkcijos efektyvumo testavimas: kostitucijos eilučių hash'avimas
+### Hash funkcijos efektyvumo testavimas: kostitucijos eilučių hash'avimas
 Hash funkcija veikia pakankamai efektyviai, Lietuvos Konstitucijos hash'inimas užtrunka apie 4ms. Hash funkcijos laiko nuo inputo dydžio prikausimybė yra tiesinė O(n)
 
-### Testavimo script'o output'as:
+#### Testavimo script'o output'as:
 ```console
    20 hash'avimų vidurkis:
    1 eilutės: 0.00010s
@@ -133,9 +133,9 @@ Hash funkcija veikia pakankamai efektyviai, Lietuvos Konstitucijos hash'inimas u
 ```  
 ![image](https://user-images.githubusercontent.com/80033246/192839927-b912f03b-d12e-4301-8fb2-e6d4096d3437.png)
 
-## Atsparumo kolizijai testavimas: 25 000 porų po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas
+### Atsparumo kolizijai testavimas: 25 000 porų po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas
 Suhash'inus 25 000 porų po 10, 100, 500 ir 1 000 atsitiktinių simbolių, nesutapo jokių porų hash'ai, taigi hash funkcija yra pakankamai atspari kolizijai
-### Testavimo script'o output'as:
+#### Testavimo script'o output'as:
 ```console
 Suhash'inta 200000 simbolių eillučių (80500000 simbolių) per 9.57400s
 Vidutinis hash'avimo laikas: 0.00005s
@@ -146,10 +146,10 @@ Vidutinis hash'o ilgis: 64.0
 Kolizijos: 0
 ```
 
-## Lavinos efekto testavimas: 25 000 porų (poros simbolių eilutės skiriasi 1 simboliu), po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas 
+### Lavinos efekto testavimas: 25 000 porų (poros simbolių eilutės skiriasi 1 simboliu), po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas 
 Suhash'inus 25 000 porų po 10, 100, 500 ir 1 000 simbolių, kurios skiriasi tik vienu simboliu, vidutinis hex'ų panašumas ~5%, o maksimalus hex'ų panašumas ~31%, vidutinis bit'ų panašumas ~27%, o maksimalus bit'ų panašumas ~70%, taigi, hash funkcija atitinka lavinos efektą
 
-### Testavimo script'o output'as:
+#### Testavimo script'o output'as:
 ```console
 Suhash'inta 200000 simbolių eillučių (80500000 simbolių) per 9.42922s
 Vidutinis hash'avimo laikas: 0.00005s
@@ -167,5 +167,39 @@ Mažiausias bitų panašumas: 35.55%
 Didžiausias bitų panašumas: 69.53%
 ```
 
-## Apibendrinimas
-Pagal mano atliktą testavimą, hash funkcija atitinka visus reikalavimus. Man nepavyko rasti nei vienos kolizijos, tačiau ši hash funkcija nėra labai efektyvi (~10 kartų lėtesnė už SHA256).
+### Apibendrinimas
+Pagal mano atliktą testavimą, hash funkcija atitinka visus reikalavimus. Man nepavyko rasti nei vienos kolizijos ir pakeitus vieną simbolį hash'ai smarkiai skiriasi, tačiau ši hash funkcija nėra labai efektyvi.
+
+## Mano hash funkcijos palyginimas su MD5, SHA-256 ir SHA-1
+Palyginimamas buvo naudojamos šios hash funkcijų realizacijos: [MD5](http://www.zedwood.com/article/cpp-md5-function), [SHA-256](http://www.zedwood.com/article/cpp-sha256-function), [SHA-1](http://www.zedwood.com/article/cpp-sha1-function)
+
+### Efektyvumo palyginimas
+Funkcijų efektyvumui palyginti pakartojau konstitucijos hash'avimo testą. Kaip matome, mano funkcija yra daug lėtesnė už kitas lyginamas funkcijas. Pati greičiausia yra MD5 funkcija, tačiau jos output'as yra tik 128 bitų dydžio. Antroje vietoje yra SHA-1 funkcija, jos output'as yra 160 bitų dydžio. Trečioje vietoje liko SHA-256 funkcija.
+![image](https://user-images.githubusercontent.com/80033246/193121377-f857c7a0-7ea8-4604-8e5e-32ec83f0645a.png)
+
+|   | Hash | MD5 | SHA-256 | SHA-1 |
+|---|---|---|---|---|
+| 1 | 0.00005 | 0.00 | 0.00 | 0.00002 |
+| 2 | 0.0001 | 0.00003 | 0.00 | 0.00003 |
+| 4 | 0.00008 | 0.00002 | 0.00 | 0.00003 |
+| 8 | 0.0001 | 0.00005 | 0.00 | .000 |
+| 16 | 0.0001 | 0.00003 | 0.00003 | .000 |
+| 32 | 0.0002 | 0.00002 | 0.00 | 0.00005 |
+| 64 | 0.00022 | 0.00 | 0.00005 | 0.00002 |
+| 128 | 0.00053 | 0.00002 | 0.0001 | 0.0001 |
+| 256 | 0.00092 | 0.00008 | 0.0001 | 0.00015 |
+| 512 | 0.0022 | 0.00008 | 0.0003 | 0.00017 |
+| 789 | 0.0034 | 0.0002 | 0.00038 | 0.00025 |
+
+
+### Lavinos efekto palyginimas
+Lavinos efekto palyginimui hash'inau 25 000 porų po 10, 100, 500 ir 1 000 simbolių, kurios skiriasi tik vienu simboliu. Pagal vidutinį hex'ų panašumą, mano funkcija liko paskutinėje vietoje, tačiau pagal vidutinį bitų panašumą užėmė 2-ąją vietą po SHA-256 funkcijos ir 1-ąją vietą pagal mažiausią bitų panašumą. Geriausią maksimalų hex'ų panašumą turi SHA-256 funkcija (trečdaliu mažesnis, nei kitų funkcijų), kitų lyginamų funkcijų rezultatai labai panašūs, apie 32%.
+
+![image](https://user-images.githubusercontent.com/80033246/193122841-07014f9e-b0cd-4e06-9b72-d43d4455a7ad.png)
+
+|   | Hex, avg | Hex, min | Hex, max | Bits, avg | Bits, min | Bits, max |
+|---|---|---|---|---|---|---|
+| Hash | 5.07128 | 0.00 | 31.25 | 26.60688 | 33.98 | 70.7 |
+| MD5 | 3.12487 | 0.00 | 31.25 | 37.49916 | 66.02 | 84.77 |
+| SHA-256 | 3.13834 | 0.00 | 21.88 | 25.00426 | 36.72 | 62.5 |
+| SHA-1 | 3.12469 | 0.00 | 32.5 | 34.37765 | 59.38 | 80.86 |
