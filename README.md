@@ -204,3 +204,28 @@ Lavinos efekto palyginimui hash'inau 25 000 porų po 10, 100, 500 ir 1 000 simbo
 | MD5 | 6.24974 | 0 | 31.25 | 74.99832 | 66.02 | 84.77 |
 | SHA-256 | 6.27668 | 0 | 21.88 | 50.00852 | 36.72 | 62.5 |
 | SHA-1 | 6.24938 | 0 | 32.5 | 68.7553 | 59.38 | 80.86 |
+
+### Hash'avimo su *salt* analizė
+Hash'avimui buvo naudojamas atsitiktinai sugeneruotas *salt*. Rezultatai:
+
+```console
+Pirmas hash'avimas                                               Antras hash'avimas
+Inputa'ai - failai su vienu simboliu:
+20130002e414e00f05e11f142e0de225d1440310d00411052211fe12404422f1 6012d1f2243515102524e1542351e412f2153d41034e4d532201014033015837
+042134cd6a7b7e3b53a5c4112c112d92b6601751a83861d64b33e744bc5d9938 5501256687611f56072f7322456206773722f4463f1f70153566056676734166
+
+Inputa'ai - failai su 10 000 atsitiktinių simbolių:
+e039135760356f5644fc130c413311155712311dd061fceef4e6e65061224e0f f1fede4ffe0ec4e2b1a16d98341a00f5ed9dec3b5f167a404e66f13d513dcec0
+8401f54579a688767895bb5893a9ab458979ab69a5868c9b6a7a9b9b3ba66848 b712581b47b679fedcdbf8dfacc7ebc9cce7dbeccdae9e8bbbc08efcddfba8ee
+
+Inputa'ai - 10 000 simbolių failai, kurie skiriasi nuo pirmo failo vienu simboliu:
+2064742604024de21db1f231f3b2e1f1ef22f1f1e2b103d2f3ef3feedd2ecdce 90204dc44c11f182595c98956c13779a377aac27c575b687cba7887ac52a6a93
+de6035065f25f24012c1143ee33e3dfc0f12b1cff20000103032e2e3f311e402 a24240e45216b886b9537a6a66a6557767b9a7867a796a9c96b8948b99ac66b7
+
+Inputa'ai - tušti failai:
+52520f202fe223003312f13224045040e5110320511232d4ef3ed2d00d225685 d78a696b89b3887966565677a7a68b64699a775a5a78556c4b8a486a7496789b
+8e0192e9c9b0ae099f0dd119ccacafed2fec1e0c1fbc2c1d2090ed9de0c00b79 bac3475a378bbc8cc2298954a479cb124c883ba964a994143b7272cabcaa5996
+```
+
+Kaip matome, suhash'avus tą patį failą du kartus gaunamas skirtingas output'as, nes buvo naudotas skirtingas *salt*'as. Hash'ų panašumas naudojant *salt*'ą smarkiai nepakito
+![image](https://user-images.githubusercontent.com/80033246/193898399-162b37ba-8a55-4b79-9afc-0db78675d940.png)
