@@ -4,6 +4,7 @@
 #include <chrono>
 #include <ctime>    
 #include <vector>
+#include <thread>
 
 #include "../include/hash.hpp"
 
@@ -52,6 +53,8 @@ std::vector<std::string> readLines(std::string fileName) {
 std::string generateSalt(std::string file, Hash &h256) {
     auto n = static_cast<long unsigned int>(hrClock::now().time_since_epoch().count());
     std::string salt = h256.hash(std::to_string(n));
+    std::chrono::milliseconds timespan(1);
+    std::this_thread::sleep_for(timespan);
     return salt;
 }
 
@@ -183,7 +186,7 @@ int main(int argc, char** argv) {
     }
 
     // kiekvienos failo eitutės hashinimas su salt
-    if (lines && !useSalt) {
+    if (lines && useSalt) {
         for (int i = filesBegin; i < filesEnd; i++) {
             std::vector<std::string> input = readLines(argv[i]);
 

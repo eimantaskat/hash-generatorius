@@ -220,7 +220,7 @@ def test_4(fg, regen_files = False):
     print(f"Didžiausias bitų panašumas: {max_bits:.2f}%")
 
 def hash(file, flag):
-    command = "./hash-test " + flag + " " + " ".join(file)
+    command = "./hash-test -s " + flag + " " + " ".join(file)
 
     output = subprocess.run(command, stdout=subprocess.PIPE)
     output_file = output.stdout.decode('utf-8')
