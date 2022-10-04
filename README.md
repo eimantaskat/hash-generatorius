@@ -147,7 +147,7 @@ Kolizijos: 0
 ```
 
 ### Lavinos efekto testavimas: 25 000 porų (poros simbolių eilutės skiriasi 1 simboliu), po 10, 100, 500 ir 1 000 atsitiktinių simbolių hash'inimas 
-Suhash'inus 25 000 porų po 10, 100, 500 ir 1 000 simbolių, kurios skiriasi tik vienu simboliu, vidutinis hex'ų panašumas ~5%, o maksimalus hex'ų panašumas ~31%, vidutinis bit'ų panašumas ~27%, o maksimalus bit'ų panašumas ~70%, taigi, hash funkcija atitinka lavinos efektą
+Suhash'inus 25 000 porų po 10, 100, 500 ir 1 000 simbolių, kurios skiriasi tik vienu simboliu, vidutinis hex'ų panašumas ~10%, o maksimalus hex'ų panašumas ~31%, vidutinis bit'ų panašumas ~53%, o maksimalus bit'ų panašumas ~70%, taigi, hash funkcija atitinka lavinos efektą
 
 #### Testavimo script'o output'as:
 ```console
@@ -158,11 +158,11 @@ Mažiausias hash'avimo laikas: 0.00000s
 Vidutinis input'o ilgis: 402.50000
 Vidutinis hash'o ilgis: 64.0
 
-Vidutinis hex'ų panašumas: 5.07770%
+Vidutinis hex'ų panašumas: 10.1554%
 Mažiausias hex'ų panašumas: 0.00%
 Didžiausias hex'ų panašumas: 31.25%
 
-Vidutinis bitų panašumas: 26.60925%
+Vidutinis bitų panašumas: 53.2185%
 Mažiausias bitų panašumas: 35.55%
 Didžiausias bitų panašumas: 69.53%
 ```
@@ -195,11 +195,12 @@ Funkcijų efektyvumui palyginti pakartojau konstitucijos hash'avimo testą. Kaip
 ### Lavinos efekto palyginimas
 Lavinos efekto palyginimui hash'inau 25 000 porų po 10, 100, 500 ir 1 000 simbolių, kurios skiriasi tik vienu simboliu. Pagal vidutinį hex'ų panašumą, mano funkcija liko paskutinėje vietoje, tačiau pagal vidutinį bitų panašumą užėmė 2-ąją vietą po SHA-256 funkcijos ir 1-ąją vietą pagal mažiausią bitų panašumą. Geriausią maksimalų hex'ų panašumą turi SHA-256 funkcija (trečdaliu mažesnis, nei kitų funkcijų), kitų lyginamų funkcijų rezultatai labai panašūs, apie 32%.
 
-![image](https://user-images.githubusercontent.com/80033246/193122841-07014f9e-b0cd-4e06-9b72-d43d4455a7ad.png)
+![image](https://user-images.githubusercontent.com/80033246/193892635-e68e314d-e6db-4de6-9aff-ac616e2510b1.png)
+
 
 |   | Hex, avg | Hex, min | Hex, max | Bits, avg | Bits, min | Bits, max |
 |---|---|---|---|---|---|---|
-| Hash | 5.07128 | 0.00 | 31.25 | 26.60688 | 33.98 | 70.7 |
-| MD5 | 3.12487 | 0.00 | 31.25 | 37.49916 | 66.02 | 84.77 |
-| SHA-256 | 3.13834 | 0.00 | 21.88 | 25.00426 | 36.72 | 62.5 |
-| SHA-1 | 3.12469 | 0.00 | 32.5 | 34.37765 | 59.38 | 80.86 |
+| Hash | 10.14256 | 0 | 31.25 | 53.21376 | 33.98 | 70.7 |
+| MD5 | 6.24974 | 0 | 31.25 | 74.99832 | 66.02 | 84.77 |
+| SHA-256 | 6.27668 | 0 | 21.88 | 50.00852 | 36.72 | 62.5 |
+| SHA-1 | 6.24938 | 0 | 32.5 | 68.7553 | 59.38 | 80.86 |

@@ -211,11 +211,11 @@ def test_4(fg, regen_files = False):
     
     analyse(results, collisions=False)
     print()
-    print(f"Vidutinis hex'ų panašumas: {(hex_simillarity / len(results)):.5f}%")
+    print(f"Vidutinis hex'ų panašumas: {(hex_simillarity / len(results) * 2):.5f}%")
     print(f"Mažiausias hex'ų panašumas: {min_hex:.2f}%")
     print(f"Didžiausias hex'ų panašumas: {max_hex:.2f}%")
     print()
-    print(f"Vidutinis bitų panašumas: {(bits_simillarity / len(results)):.5f}%")
+    print(f"Vidutinis bitų panašumas: {(bits_simillarity / len(results) * 2):.5f}%")
     print(f"Mažiausias bitų panašumas: {min_bits:.2f}%")
     print(f"Didžiausias bitų panašumas: {max_bits:.2f}%")
 
